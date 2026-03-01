@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade 12: PCM Pro Mastery Test v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- MathJax Configuration for LaTeX rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        .notion-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #121212; color: #e2e8f0; }
+            .panel { background-color: #1e1e1e; border-color: #2d2d2d; }
+            .option-btn { background-color: #2a2a2a; border-color: #3a3a3a; }
+            .option-btn:hover:not(:disabled) { background-color: #333333; }
+            .note-panel { background-color: #1a202c; border-color: #2d3748; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #4a5568; }
+        }
+
+        .option-btn.correct { background-color: #065f46 !important; border-color: #059669 !important; color: white; }
+        .option-btn.incorrect { background-color: #991b1b !important; border-color: #dc2626 !important; color: white; }
+        
+        /* Ensure MathJax elements blend well */
+        mjx-container { font-size: 105%; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<div id="app" class="h-[100dvh] flex flex-col p-4 md:p-6 lg:p-8">
+    
+    <!-- Landing State -->
+    <div id="landing" class="m-auto max-w-2xl w-full text-center space-y-8 animate-in fade-in zoom-in duration-500">
+        <div class="inline-flex p-4 bg-blue-600 text-white rounded-3xl shadow-xl shadow-blue-200">
+            <i class="fas fa-microscope text-4xl"></i>
+        </div>
+        <div class="space-y-2">
+            <h1 class="text-4xl font-black tracking-tight lg:text-5xl">PCM Elite Test v2</h1>
+            <p class="text-slate-500 text-lg">A completely new set of 20 high-difficulty questions spanning Physics, Chemistry, and Math.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="panel bg-white p-4 rounded-2xl border border-slate-200 notion-shadow">
+                <span class="block text-blue-600 font-bold text-xl">20</span>
+                <span class="text-xs uppercase tracking-widest font-semibold opacity-60">New Questions</span>
+            </div>
+            <div class="panel bg-white p-4 rounded-2xl border border-slate-200 notion-shadow">
+                <span class="block text-indigo-600 font-bold text-xl">Split</span>
+                <span class="text-xs uppercase tracking-widest font-semibold opacity-60">Insights Pane</span>
+            </div>
+            <div class="panel bg-white p-4 rounded-2xl border border-slate-200 notion-shadow">
+                <span class="block text-emerald-600 font-bold text-xl">LaTeX</span>
+                <span class="text-xs uppercase tracking-widest font-semibold opacity-60">Math Engine</span>
+            </div>
+        </div>
+        <button onclick="startQuiz()" class="group relative w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-xl hover:bg-black transition-all overflow-hidden">
+            <span class="relative z-10">Initialize Assessment</span>
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </button>
+    </div>
+
+    <!-- Quiz State -->
+    <div id="quiz-container" class="hidden h-full flex flex-col gap-6">
+        
+        <!-- Header -->
+        <header class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="location.reload()" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="h-10 w-px bg-slate-200 dark:bg-slate-700"></div>
+                <div>
+                    <h2 id="q-category" class="text-xs font-bold uppercase tracking-widest text-blue-600">PHYSICS</h2>
+                    <span id="q-counter" class="text-sm font-medium opacity-60">Question 01 of 20</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex items-center gap-2">
+                    <span class="text-xs font-bold opacity-40">PROGRESS</span>
+                    <div class="w-32 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full">
+                        <div id="progress-fill" class="h-full bg-blue-600 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl font-bold text-sm">
+                    Score: <span id="current-score">00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 flex gap-6 overflow-hidden">
+            
+            <!-- Left Pane: Question & Options -->
+            <div id="question-pane" class="flex-1 panel bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-slate-800 rounded-3xl notion-shadow flex flex-col overflow-hidden transition-all duration-500">
+                <div class="flex-1 p-5 lg:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+                    <h3 id="question-text" class="text-xl lg:text-2xl font-semibold leading-snug">
+                        Loading problem...
+                    </h3>
+                    
+                    <div id="options-grid" class="grid grid-cols-1 gap-3">
+                        <!-- Options go here -->
+                    </div>
+                </div>
+                
+                <footer class="p-4 lg:p-5 bg-slate-50 dark:bg-[#151515] border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <span id="diff-tag" class="text-[10px] font-black uppercase tracking-[0.2em] px-2 py-1 rounded bg-slate-200 dark:bg-slate-800">LEVEL: DIFFICULT</span>
+                    <button id="next-btn" onclick="nextQuestion()" class="hidden bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg flex items-center gap-2">
+                        Next <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+                </footer>
+            </div>
+
+            <!-- Right Pane: Split Insights -->
+            <aside id="insight-pane" class="hidden lg:flex w-0 opacity-0 flex-col gap-4 overflow-hidden transition-all duration-500">
+                <div class="flex-1 panel note-panel bg-slate-900 text-white p-6 lg:p-8 rounded-3xl overflow-y-auto custom-scrollbar flex flex-col">
+                    <div class="flex items-center gap-3 mb-6 text-blue-400">
+                        <i class="fas fa-microscope text-xl"></i>
+                        <span class="text-xs font-black uppercase tracking-widest">Mastery Insight</span>
+                    </div>
+                    
+                    <div id="rationale-box" class="mb-6 p-4 bg-white/5 rounded-2xl border border-white/10 hidden">
+                        <h4 class="text-sm font-bold text-emerald-400 mb-2">Logic</h4>
+                        <p id="rationale-text" class="text-sm leading-relaxed opacity-80 italic"></p>
+                    </div>
+
+                    <div id="note-box" class="flex-1 hidden">
+                        <h4 class="text-sm font-bold text-blue-400 mb-4">Theoretical Foundation</h4>
+                        <p id="note-text" class="text-sm leading-relaxed text-justify font-light opacity-90"></p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Results State -->
+    <div id="results" class="hidden m-auto max-w-xl w-full panel bg-white dark:bg-[#1e1e1e] p-10 rounded-3xl border border-slate-200 dark:border-slate-800 notion-shadow text-center space-y-8">
+        <h2 class="text-3xl font-black italic">Assessment Terminal</h2>
+        
+        <div class="relative w-40 h-40 mx-auto">
+            <svg class="w-full h-full transform -rotate-90">
+                <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-100 dark:text-slate-800"></circle>
+                <circle id="score-circle" cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-blue-600" stroke-dasharray="439.6" stroke-dashoffset="439.6" style="transition: stroke-dashoffset 1.5s ease-out"></circle>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="final-pct" class="text-4xl font-black">0%</span>
+                <span class="text-[10px] font-bold opacity-40 uppercase">Accuracy</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl">
+                <span id="final-correct" class="block text-2xl font-black text-emerald-600">0</span>
+                <span class="text-[10px] font-bold opacity-60 uppercase">Correct</span>
+            </div>
+            <div class="p-4 bg-rose-50 dark:bg-rose-950/20 rounded-2xl">
+                <span id="final-wrong" class="block text-2xl font-black text-rose-600">0</span>
+                <span class="text-[10px] font-bold opacity-60 uppercase">Deficit</span>
+            </div>
+        </div>
+
+        <button onclick="location.reload()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all">
+            Recalibrate System
+        </button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { 
+            q: "Determine the valid domain of \\(x\\) for the identity \\(3\\cos^{-1}x = \\cos^{-1}(4x^3 - 3x)\\).", 
+            options: ["\\([1/2, 1]\\)", "\\([-1/2, 1/2]\\)", "\\([0, 1]\\)", "\\([-1, 1]\\)"], 
+            correct: 0, 
+            rationale: "Substitute \\(x = \\cos\\theta\\), then \\(4\\cos^3\\theta - 3\\cos\\theta = \\cos 3\\theta\\). For \\(3\\theta\\) to fall in the principal branch \\([0, \\pi]\\), \\(\\theta\\) must be in \\([0, \\pi/3]\\). Thus, \\(x = \\cos\\theta\\) must be in \\([1/2, 1]\\).", 
+            level: "difficult", 
+            category: "Math", 
+            note: "Trigonometric substitution transforms algebraic functions into trigonometric identities. The crucial step is ensuring that the intermediate angle (in this case, \\(3\\theta\\)) remains strictly within the principal value branch of the inverse function (\\([0, \\pi]\\) for inverse cosine). If the angle exceeds this branch, the identity breaks down and requires a phase shift. The valid domain for \\(x\\) directly restricts the function to this primary interval. This problem illustrates the importance of domain constraints when simplifying transcendental equations." 
+        },
+        { 
+            q: "Simplify the expression \\(\\tan^{-1}\\sqrt{\\frac{1-\\cos x}{1+\\cos x}}\\) for \\(0 < x < \\pi\\).", 
+            options: ["\\(x/2\\)", "\\(x\\)", "\\(\\pi/4 - x/2\\)", "\\(\\pi/2 - x\\)"], 
+            correct: 0, 
+            rationale: "Using half-angle identities, \\(1-\\cos x = 2\\sin^2(x/2)\\) and \\(1+\\cos x = 2\\cos^2(x/2)\\). The fraction simplifies to \\(\\tan^2(x/2)\\). Taking the square root gives \\(\\tan(x/2)\\), so the inverse tangent yields \\(x/2\\).", 
+            level: "medium", 
+            category: "Math", 
+            note: "Half-angle identities are vital for reducing complex trigonometric fractions into perfect squares. In this range, \\(x/2\\) lies between \\(0\\) and \\(\\pi/2\\), ensuring that \\(\\tan(x/2)\\) is positive and perfectly matches the principal branch of the inverse tangent function. If \\(x\\) were outside this range, we would need to account for absolute values when taking the square root. Such simplifications are frequently used in integral calculus to reduce unwieldy expressions into easily integrable linear forms." 
+        },
+        { 
+            q: "Solve the equation: \\(\\sin^{-1}\\frac{5}{x} + \\sin^{-1}\\frac{12}{x} = \\frac{\\pi}{2}\\).", 
+            options: ["\\(13\\)", "\\(17\\)", "\\(7\\)", "\\(60\\)"], 
+            correct: 0, 
+            rationale: "Rewrite as \\(\\sin^{-1}(5/x) = \\pi/2 - \\sin^{-1}(12/x) = \\cos^{-1}(12/x)\\). Using a right triangle where adjacent is 12 and hypotenuse is \\(x\\), the opposite side is \\(5\\). Thus, \\(x^2 = 5^2 + 12^2\\), yielding \\(x = 13\\).", 
+            level: "difficult", 
+            category: "Math", 
+            note: "This problem leverages the complementary identity \\(\\sin^{-1}\\theta + \\cos^{-1}\\theta = \\pi/2\\). By shifting one term to the right side, you convert an inverse sine into an inverse cosine. From there, constructing a reference right triangle allows you to match the opposite and adjacent sides directly. It elegantly transforms a transcendental equation into a basic Pythagorean triplet (5, 12, 13). Recognizing these triplets can drastically reduce calculation time in competitive exams." 
+        },
+        { 
+            q: "Evaluate the sum: \\(\\tan^{-1}\\frac{1}{2} + \\tan^{-1}\\frac{1}{5} + \\tan^{-1}\\frac{1}{8}\\).", 
+            options: ["\\(\\frac{\\pi}{4}\\)", "\\(\\frac{\\pi}{2}\\)", "\\(\\frac{\\pi}{3}\\)", "\\(\\pi\\)"], 
+            correct: 0, 
+            rationale: "First add the first two: \\(\\tan^{-1}\\left(\\frac{1/2 + 1/5}{1 - 1/10}\\right) = \\tan^{-1}\\frac{7}{9}\\). Then add \\(\\tan^{-1}\\frac{1}{8}\\): \\(\\tan^{-1}\\left(\\frac{7/9 + 1/8}{1 - 7/72}\\right) = \\tan^{-1}1 = \\frac{\\pi}{4}\\).", 
+            level: "difficult", 
+            category: "Math", 
+            note: "The addition formula \\(\\tan^{-1}A + \\tan^{-1}B = \\tan^{-1}\\left(\\frac{A+B}{1-AB}\\right)\\) applies when \\(AB < 1\\). In multi-term sums, it is best to apply the formula iteratively to pairs of terms. This specific series converges beautifully to \\(\\pi/4\\), representing a geometric relationship between rational tangents. It highlights the algebraic structure hidden within inverse trigonometric functions. Verifying the condition \\(AB < 1\\) at each step ensures that no phase adjustments (like adding \\(\\pi\\)) are required." 
+        },
+        { 
+            q: "Determine the domain of the function \\(f(x) = \\sin^{-1}(2x - 3)\\).", 
+            options: ["\\([1, 2]\\)", "\\([-1, 1]\\)", "\\([0, 2]\\)", "\\([2, 4]\\)"], 
+            correct: 0, 
+            rationale: "The argument of the inverse sine function must lie within \\([-1, 1]\\). Setting up the inequality \\(-1 \\le 2x - 3 \\le 1\\) yields \\(2 \\le 2x \\le 4\\), which simplifies to \\(1 \\le x \\le 2\\).", 
+            level: "medium", 
+            category: "Math", 
+            note: "The domain of any inverse sine or inverse cosine function is strictly bounded between -1 and 1, reflecting the range of the original sine and cosine functions. Whenever a composite function is formed, the entire internal argument must satisfy this constraint. Solving the resulting compound inequality identifies the valid set of inputs (the domain) for the new variable \\(x\\). Function domain analysis is a crucial first step before attempting to find derivatives or integrals. It ensures the mathematical model remains physically and logically consistent." 
+        },
+        { 
+            q: "Evaluate \\(\\cos\\left(\\sin^{-1}\\frac{1}{4} + \\sec^{-1}4\\right)\\).", 
+            options: ["\\(0\\)", "\\(1\\)", "\\(1/4\\)", "\\(\\sqrt{15}/4\\)"], 
+            correct: 0, 
+            rationale: "Convert \\(\\sec^{-1}4\\) to \\(\\cos^{-1}(1/4)\\). The expression becomes \\(\\cos(\\sin^{-1}(1/4) + \\cos^{-1}(1/4))\\). Since \\(\\sin^{-1}\\theta + \\cos^{-1}\\theta = \\pi/2\\), we evaluate \\(\\cos(\\pi/2) = 0\\).", 
+            level: "medium", 
+            category: "Math", 
+            note: "Reciprocal identities for inverse functions, such as \\(\\sec^{-1}x = \\cos^{-1}(1/x)\\), are highly useful for standardizing terms. Once converted, the expression perfectly matches the complementary identity \\(\\sin^{-1}x + \\cos^{-1}x = \\pi/2\\). This reduces a seemingly complex nested trigonometric evaluation into a basic known constant. The cosine of \\(\\pi/2\\) radians (90 degrees) is zero. Recognizing these structural patterns eliminates the need to draw triangles or calculate exact angle measures." 
+        },
+        { 
+            q: "Simplify the expression \\(\\tan^{-1}\\left(\\frac{x}{\\sqrt{a^2 - x^2}}\\right)\\) where \\(|x| < a\\).", 
+            options: ["\\(\\sin^{-1}\\left(\\frac{x}{a}\\right)\\)", "\\(\\cos^{-1}\\left(\\frac{x}{a}\\right)\\)", "\\(\\tan^{-1}\\left(\\frac{x}{a}\\right)\\)", "\\(\\frac{1}{a} \\sin^{-1}x\\)"], 
+            correct: 0, 
+            rationale: "Let \\(x = a\\sin\\theta\\). The denominator becomes \\(\\sqrt{a^2 - a^2\\sin^2\\theta} = a\\cos\\theta\\). The fraction simplifies to \\(\\frac{a\\sin\\theta}{a\\cos\\theta} = \\tan\\theta\\). Thus, \\(\\tan^{-1}(\\tan\\theta) = \\theta = \\sin^{-1}(x/a)\\).", 
+            level: "difficult", 
+            category: "Math", 
+            note: "Expressions involving \\(\\sqrt{a^2 - x^2}\\) strongly suggest the trigonometric substitution \\(x = a\\sin\\theta\\). This relies on the Pythagorean identity \\(1 - \\sin^2\\theta = \\cos^2\\theta\\) to clear the radical. The restriction \\(|x| < a\\) ensures that the value under the square root remains positive and that the resulting angle falls within the principal branch. Such substitutions are the backbone of solving complex algebraic geometries and integrating circular functions. It elegantly maps linear algebraic ratios into clean angular representations." 
+        },
+        { 
+            q: "According to Henry's Law, if the value of \\(K_H\\) for a gas increases at a constant pressure, what happens to its solubility in a liquid?", 
+            options: ["It decreases", "It increases", "It remains constant", "It fluctuates exponentially"], 
+            correct: 0, 
+            rationale: "Henry's Law is \\(p = K_H \\cdot x\\). Rearranging for solubility (mole fraction \\(x\\)), we get \\(x = p / K_H\\). If \\(p\\) is constant and \\(K_H\\) increases, \\(x\\) must decrease.", 
+            level: "medium", 
+            category: "Chemistry", 
+            note: "Henry's Law constant (\\(K_H\\)) is a measure of a gas's resistance to dissolving in a specific solvent. A higher \\(K_H\\) value indicates that the gas is less soluble under a given partial pressure. Because \\(K_H\\) typically increases with temperature, the solubility of most gases drops as the liquid warms. This is a crucial principle in environmental chemistry, explaining why warm lakes hold less dissolved oxygen for aquatic life. The inverse mathematical relationship between \\(K_H\\) and solubility (\\(x\\)) directly dictates the equilibrium state of gas-liquid mixtures." 
+        },
+        { 
+            q: "Which concentration unit is most appropriate for expressing trace quantities of pollutants, such as \\(5.8\\) of dissolved \\(\\text{O}_2\\) in sea water?", 
+            options: ["Parts per million (ppm)", "Mole fraction (\\(x\\))", "Molarity (M)", "Molality (m)"], 
+            correct: 0, 
+            rationale: "When a solute is present in extremely small (trace) amounts, parts per million (ppm) is used to provide a manageable number instead of a tiny decimal. \\(5.8\\) ppm means \\(5.8\\) parts of \\(\\text{O}_2\\) per million parts of water.", 
+            level: "easy", 
+            category: "Chemistry", 
+            note: "Parts per million (ppm) is defined as the number of parts of a component per million parts of the total mixture. It is the standard unit in environmental science and toxicology for measuring minuscule concentrations of pollutants, toxins, or essential trace minerals. Using molarity or molality for such small amounts would result in cumbersome scientific notation (e.g., \\(10^{-6}\\) M). Ppm allows for clear, whole-number comparisons when setting safety standards for drinking water or air quality. It can be expressed volumetrically, by mass, or as mass-to-volume depending on the medium." 
+        },
+        { 
+            q: "A \\(35\\%\\) (v/v) solution of ethylene glycol in water is primarily utilized industrially as a(n):", 
+            options: ["Antifreeze in car engines", "Commercial bleaching agent", "Intravenous medical fluid", "Agricultural pesticide"], 
+            correct: 0, 
+            rationale: "Ethylene glycol lowers the freezing point of water. A \\(35\\%\\) (v/v) solution lowers the freezing point to \\(255.4\\) K (\\(-17.6^\\circ\\text{C}\\)), making it an effective antifreeze for cooling systems.", 
+            level: "easy", 
+            category: "Chemistry", 
+            note: "The practical application of specific solution concentrations is a major aspect of physical chemistry. Ethylene glycol acts as an antifreeze by disrupting the hydrogen bonding network of water, preventing it from forming a solid ice lattice at \\(0^\\circ\\text{C}\\). This colligative property—freezing point depression—is directly dependent on the concentration of the solute particles. The \\(35\\%\\) volume-by-volume specification provides the optimal balance of freezing protection and fluid viscosity for automotive engines. It demonstrates how manipulating mixture composition yields critical materials for engineering and everyday life." 
+        },
+        { 
+            q: "The study of a mixture's specific composition is critical because varying concentrations drastically alter utility. For instance, \\(1.5\\) ppm of fluoride in water causes:", 
+            options: ["Mottled teeth", "Prevention of tooth decay", "Lethal poisoning", "Increased bone density"], 
+            correct: 0, 
+            rationale: "While \\(1.0\\) ppm of fluoride prevents tooth decay, increasing the concentration slightly to \\(1.5\\) ppm causes mottling (discoloration) of teeth, and much higher doses become poisonous.", 
+            level: "medium", 
+            category: "Chemistry", 
+            note: "The fluoride example perfectly illustrates the axiom 'the dose makes the poison.' In chemistry, identifying the components of a mixture is only half the battle; knowing their exact quantitative ratio dictates the material's effect. Trace elements can be beneficial, benign, or toxic depending entirely on their concentration in parts per million. This principle guides public health policies, such as municipal water fluoridation, where tight concentration controls must be maintained. It underscores why rigorous quantitative analysis is essential in pharmacology, environmental science, and materials engineering." 
+        },
+        { 
+            q: "In any complex multi-component solution, the sum of all individual mole fractions (\\(x_1 + x_2 + \\dots + x_n\\)) is always equal to:", 
+            options: ["\\(1\\)", "\\(100\\)", "The total moles of solvent", "The total mass of the solution"], 
+            correct: 0, 
+            rationale: "Mole fraction is a ratio of a part to the whole. The sum of all parts divided by the total always yields exactly \\(1\\) (or unity), regardless of the number of components.", 
+            level: "easy", 
+            category: "Chemistry", 
+            note: "Mole fraction is a dimensionless concentration unit representing the proportion of molecules of a specific component relative to the total molecules in the mixture. Because it is a rigorous ratio, the sum of all mole fractions in a closed system perfectly accounts for \\(100\\%\\) of the particles, thus equating to exactly \\(1\\). This property makes mole fractions incredibly useful for calculating partial pressures using Raoult's Law and Dalton's Law. If you know the mole fractions of all but one component in a mixture, you can easily find the last one by subtracting the known sum from 1. It is a fundamental conservation principle in mixture thermodynamics." 
+        },
+        { 
+            q: "Which property does the mole fraction of a gas in a solution most usefully relate to, as described by Henry's Law?", 
+            options: ["Partial pressure in the vapor phase", "Boiling point of the pure solvent", "Density of the solid solute", "Mass percentage of the mixture"], 
+            correct: 0, 
+            rationale: "Henry's Law mathematically relates the partial pressure of a gas (\\(p\\)) directly to its mole fraction (\\(x\\)) in the liquid phase via the constant \\(K_H\\).", 
+            level: "medium", 
+            category: "Chemistry", 
+            note: "Mole fraction is the ideal unit for correlating the concentration of dissolved gases with their vapor pressures. According to Henry's Law, the amount of gas that dissolves in a liquid is directly proportional to the partial pressure of that gas hovering above the liquid surface. Using mole fraction simplifies the thermodynamic equations because it directly reflects the ratio of interacting particles. This relationship explains why opening a carbonated beverage releases bubbles: the sudden drop in external partial pressure sharply decreases the equilibrium mole fraction of dissolved \\(\\text{CO}_2\\). It is a vital concept in predicting phase equilibria in chemical engineering." 
+        },
+        { 
+            q: "While the electric field of a single point charge falls off as \\(1/r^2\\), the field of an electric dipole at large distances falls off proportionally to:", 
+            options: ["\\(1/r^3\\)", "\\(1/r^2\\)", "\\(1/r\\)", "\\(1/r^4\\)"], 
+            correct: 0, 
+            rationale: "Because a dipole consists of two opposite charges that nearly cancel each other out from far away, its field weakens much faster than a point charge, specifically as \\(1/r^3\\).", 
+            level: "medium", 
+            category: "Physics", 
+            note: "An electric dipole is fundamentally a pair of closely spaced equal and opposite charges. At distances much larger than the separation between the charges, the fields from the positive and negative charges almost entirely cancel each other out. The residual field that survives this cancellation decays proportionally to the inverse cube of the distance (\\(1/r^3\\)). This rapid decay explains why dipole-dipole interactions, such as Van der Waals forces between molecules, are very short-range. Understanding this geometric attenuation is crucial for modeling intermolecular forces and the behavior of dielectric materials. It highlights the difference between monopolar and dipolar field geometries." 
+        },
+        { 
+            q: "Why are the metal tanks of petrol tankers connected to the Earth by a hanging chain during transit?", 
+            options: ["To provide a path for static charges to flow to Earth", "To act as a lightning rod during storms", "To balance the mechanical weight of the fluid", "To measure the speed of the vehicle"], 
+            correct: 0, 
+            rationale: "Friction between the moving petrol and the tank, or the air and the vehicle, builds up static charge. The chain provides an earthing path, preventing sparking that could ignite the fuel.", 
+            level: "easy", 
+            category: "Physics", 
+            note: "Static electricity poses a severe explosion hazard when transporting highly flammable substances like petrol. As the fluid sloshes inside the tank, friction causes a significant build-up of static charge on the metal surface. If this charge reaches a critical threshold, it can arc to a nearby grounded object, creating a high-energy spark. Earthing (or grounding) the vehicle via a conductive metal chain ensures that any excess electrons are immediately transferred to the massive reservoir of the Earth. This continuous discharge maintains the tanker at a neutral potential. It is a vital safety engineering protocol based on the conductive properties of metals and the principles of electrostatic discharge." 
+        },
+        { 
+            q: "According to Gauss's Law, what is the net electric field inside a uniformly charged, thin spherical shell?", 
+            options: ["Zero", "Constant and non-zero", "Inversely proportional to radius", "Directly proportional to enclosed charge"], 
+            correct: 0, 
+            rationale: "Any Gaussian surface drawn entirely inside the hollow shell encloses zero net charge. By Gauss's Law (\\(\\Phi = Q/\\epsilon_0\\)), the flux and thus the electric field inside must be zero.", 
+            level: "medium", 
+            category: "Physics", 
+            note: "The absence of an electric field inside a hollow conductor is one of the most remarkable consequences of the inverse-square law of electrostatics. When excess charge is placed on a spherical shell, mutual repulsion drives the charges to distribute evenly across the outer surface. If you calculate the vector sum of the electric field from all these surface charges at any point inside the shell, they perfectly cancel out to zero. This principle is practically applied in creating Faraday Cages, which shield sensitive electronics from external electromagnetic interference. It demonstrates that the internal environment of a closed conductor is completely isolated from exterior static fields. Outside the shell, however, the field behaves as if all the charge were concentrated at the exact center." 
+        },
+        { 
+            q: "In the process of charging by induction, how do you make the induced charge on a metal sphere permanent?", 
+            options: ["Ground the sphere to let 'bound' like-charges escape", "Rub the sphere with a silk cloth", "Increase the temperature of the charging rod", "Remove the rod immediately before grounding"], 
+            correct: 0, 
+            rationale: "Induction causes polarization (separation of charges). Grounding provides a conductive path for the repelled, like-charges on the far side to escape to the Earth. Removing the ground then traps the remaining opposite charge.", 
+            level: "medium", 
+            category: "Physics", 
+            note: "Charging by induction is a multi-step process that allows an object to be charged without any physical contact with the charging source. Bringing a charged rod near a neutral conductor merely polarizes the electrons within the metal, creating temporary local poles. If the rod is removed, the electrons immediately redistribute, and the object remains neutral overall. To permanently charge the object, it must be grounded while the rod is still present. The ground wire acts as an escape route for the repelled charges, while the attracted 'bound' charges are held firmly in place by the rod's field. Disconnecting the ground traps these bound charges, leaving the sphere with a permanent net charge opposite to that of the rod." 
+        },
+        { 
+            q: "Quantization of charge indicates that all free charges are integral multiples of \\(e\\). If a glass rod acquires a charge of \\(+3.2 \\times 10^{-19}\\) C, what physical event occurred?", 
+            options: ["It lost exactly 2 electrons.", "It gained exactly 2 protons.", "It lost exactly 3.2 electrons.", "It gained exactly 1 electron."], 
+            correct: 0, 
+            rationale: "Using \\(q = ne\\), \\(n = (3.2 \\times 10^{-19}) / (1.6 \\times 10^{-19}) = 2\\). Since the charge is positive, the rod lost 2 negatively charged electrons.", 
+            level: "easy", 
+            category: "Physics", 
+            note: "The principle of charge quantization dictates that electric charge is not a continuous fluid, but rather exists in discrete 'packets'. The fundamental quantum of charge is the elementary charge \\(e\\), which is the magnitude of charge on a single electron or proton (\\(\\approx 1.6 \\times 10^{-19}\\) C). Therefore, any macroscopic charge must be an exact integer multiple of this value. When a glass rod becomes positively charged via friction, it does not gain protons, because protons are tightly bound within the atomic nucleus. Instead, it loses mobile outer electrons. Dividing the total net charge by the elementary charge reveals exactly how many electrons were transferred during the interaction." 
+        },
+        { 
+            q: "If an electric dipole is placed in a completely uniform external electric field, it experiences:", 
+            options: ["Zero net force, but a net torque", "A net force and a net torque", "Zero net force and zero net torque", "A net force, but zero net torque"], 
+            correct: 0, 
+            rationale: "In a uniform field, the forces on \\(+q\\) and \\(-q\\) are exactly equal in magnitude but opposite in direction, yielding zero net translational force. However, because they act along different lines of action, they create a turning effect (torque).", 
+            level: "medium", 
+            category: "Physics", 
+            note: "A uniform electric field applies a constant force vector across all points in space. For a dipole, this means the positive end is pulled exactly as hard in one direction as the negative end is pulled in the exact opposite direction. The vector sum of these translational forces is zero, meaning the center of mass of the dipole will not accelerate. However, unless the dipole is perfectly aligned parallel to the field lines, these offset forces create a mechanical couple. This couple generates a torque (\\(\\tau = \\mathbf{p} \\times \\mathbf{E}\\)) that forces the dipole to rotate and align itself with the field. This mechanism explains how microwaves heat food by constantly rotating polar water molecules." 
+        },
+        { 
+            q: "Mathematically, the electric flux (\\(\\Phi\\)) through a given surface area is defined as the dot product of the Electric Field (\\(\\mathbf{E}\\)) and the:", 
+            options: ["Area Vector (\\(\\mathbf{A}\\))", "Dipole Moment (\\(\\mathbf{p}\\))", "Linear Charge Density (\\(\\lambda\\))", "Permittivity constant (\\(\\epsilon_0\\))"], 
+            correct: 0, 
+            rationale: "Flux measures the field lines passing through a surface. It is calculated as \\(\\Phi = \\mathbf{E} \\cdot \\mathbf{A} = EA\\cos\\theta\\), where \\(\\mathbf{A}\\) is the Area Vector perpendicular to the surface.", 
+            level: "easy", 
+            category: "Physics", 
+            note: "Electric flux is a scalar quantity that represents the total number of electric field lines penetrating a specific surface. To calculate this mathematically, the surface area must be treated as a vector quantity, known as the Area Vector. The magnitude of this vector is the surface area itself, and its direction is defined strictly as the outward-pointing normal (perpendicular) to the surface. The dot product (\\(EA\\cos\\theta\\)) ensures that only the component of the electric field that actually pierces the surface contributes to the flux. If the field lines run perfectly parallel to the surface (\\(\\theta = 90^\\circ\\)), the flux is zero. This geometrical definition is the foundational premise for applying Gauss's Law to calculate fields in symmetrical geometries." 
+        }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+
+    function startQuiz() {
+        document.getElementById('landing').classList.add('hidden');
+        document.getElementById('quiz-container').classList.remove('hidden');
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const q = questions[currentIdx];
+        
+        // Reset UI
+        document.getElementById('insight-pane').classList.add('w-0', 'opacity-0');
+        document.getElementById('insight-pane').classList.remove('w-1/3', 'opacity-100', 'hidden');
+        document.getElementById('note-box').classList.add('hidden');
+        document.getElementById('rationale-box').classList.add('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('question-pane').classList.remove('w-2/3');
+        document.getElementById('question-pane').classList.add('flex-1');
+        
+        // Update Meta
+        document.getElementById('q-category').innerText = q.category;
+        document.getElementById('q-counter').innerText = `Question ${String(currentIdx + 1).padStart(2, '0')} of 20`;
+        document.getElementById('diff-tag').innerText = `LEVEL: ${q.level.toUpperCase()}`;
+        document.getElementById('progress-fill').style.width = `${((currentIdx) / 20) * 100}%`; 
+
+        // Update Text
+        document.getElementById('question-text').innerHTML = q.q;
+        
+        const grid = document.getElementById('options-grid');
+        grid.innerHTML = q.options.map((opt, i) => `
+            <button onclick="handleSelect(${i})" class="option-btn text-left p-3 md:p-4 rounded-xl border border-slate-200 dark:border-slate-800 transition-all font-medium flex items-center gap-3 md:gap-4 hover:shadow-md">
+                <span class="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-sm border border-slate-200 dark:border-slate-700">
+                    ${String.fromCharCode(65 + i)}
+                </span>
+                <span class="text-sm md:text-base">${opt}</span>
+            </button>
+        `).join('');
+
+        // Typeset MathJax dynamically for the newly injected HTML
+        if (window.MathJax) {
+            MathJax.typesetPromise([document.getElementById('question-pane')]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+        }
+    }
+
+    function handleSelect(idx) {
+        const q = questions[currentIdx];
+        const buttons = document.querySelectorAll('.option-btn');
+        
+        buttons.forEach(btn => btn.disabled = true);
+        
+        // Logic for correctness
+        if (idx === q.correct) {
+            buttons[idx].classList.add('correct');
+            score++;
+        } else {
+            buttons[idx].classList.add('incorrect');
+            buttons[q.correct].classList.add('correct');
+        }
+
+        document.getElementById('current-score').innerText = String(score).padStart(2, '0');
+        
+        // Show Insight Pane (Split view)
+        const pane = document.getElementById('insight-pane');
+        const main = document.getElementById('question-pane');
+        
+        pane.classList.remove('hidden');
+        setTimeout(() => {
+            main.classList.remove('flex-1');
+            main.classList.add('w-full', 'lg:w-3/5');
+            pane.classList.remove('w-0', 'opacity-0');
+            pane.classList.add('w-full', 'lg:w-2/5', 'opacity-100');
+            
+            // Show content
+            document.getElementById('rationale-text').innerHTML = q.rationale;
+            document.getElementById('note-text').innerHTML = q.note;
+            document.getElementById('rationale-box').classList.remove('hidden');
+            document.getElementById('note-box').classList.remove('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+
+            // Typeset MathJax dynamically for the rationale and notes
+            if (window.MathJax) {
+                MathJax.typesetPromise([document.getElementById('insight-pane')]).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+            }
+        }, 50);
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < questions.length) {
+            renderQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById('quiz-container').classList.add('hidden');
+        document.getElementById('results').classList.remove('hidden');
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('final-pct').innerText = `${percent}%`;
+        document.getElementById('final-correct').innerText = score;
+        document.getElementById('final-wrong').innerText = questions.length - score;
+        
+        const circle = document.getElementById('score-circle');
+        const dashoffset = 439.6 - (439.6 * percent / 100);
+        circle.style.strokeDashoffset = dashoffset;
+    }
+</script>
+</body>
+</html>
